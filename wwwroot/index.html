@@ -34,7 +34,9 @@
             <div class="text-center">
                 <h1 class="display-4">Welcome</h1>
                 <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+                <button onclick="sendMessage()">Click Me</button>
             </div>
+            <div id="messageList"></div>
         </main>
     </div>
 
@@ -50,7 +52,48 @@
 
     <script src="/lib/jquery-validation/dist/jquery.validate.min.js"></script>
     <script src="/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
-      
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/3.1.7/signalr.min.js"></script>
+
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/chathub")
+            .configureLogging(signalR.LogLevel.Information)
+            .build();
+
+        async function sendMessage() {
+            var user = "foo";
+            var message = "welcome";
+            try {
+                await connection.invoke("SendMessage", user, message);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function start() {
+            try {
+                await connection.start();
+                console.log("SignalR Connected.");
+            } catch (err) {
+                console.log(err);
+                setTimeout(start, 5000);
+            }
+        };
+
+        connection.onclose(async () => {
+            await start();
+        });
+
+        connection.on("ReceiveMessage", (user, message) => {
+            const li = document.createElement("li");
+            li.textContent = `${user}: ${message}`;
+            document.getElementById("messageList").appendChild(li);
+        });
+
+        // Start the connection.
+        start();        
+    </script>
 
 </body>
 </html>
