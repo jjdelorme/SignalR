@@ -49,6 +49,23 @@ namespace signalR
             DeleteSubscription();
         }
 
+        public async Task Publish(string message)
+        {
+            TopicName topicName = TopicName.FromProjectTopic(_projectId, _topicId);
+            PublisherClient publisher = await PublisherClient.CreateAsync(topicName);
+
+            try
+            {
+                string result = await publisher.PublishAsync(message);
+                _log.LogDebug($"Published message: {message}");
+            }
+            catch (Exception exception)
+            {
+                _log.LogError($"An error ocurred when publishing message {message}: " +
+                    $"{exception.Message}");
+            }            
+        }
+
         private void DeleteSubscription()
         {
             SubscriberServiceApiClient subscriber = SubscriberServiceApiClient.Create();
