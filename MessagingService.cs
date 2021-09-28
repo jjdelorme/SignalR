@@ -9,17 +9,17 @@ namespace signalR
 {
     public class MessagingService : IHostedService
     {
-        private ILogger _log;
+        private ILogger<MessagingService> _log;
         private string _projectId;
         private string _topicId;
         private string _subscriptionId;
         private IHubContext<ChatHub> _hub;
         private SubscriptionName? _subscriptionName;
 
-        public MessagingService(ILogger logger, IConfiguration config, IHubContext<ChatHub> hub)
+        public MessagingService(ILogger<MessagingService> logger, IConfiguration config, IHubContext<ChatHub> hub)
         {
             _log = logger;
-            _subscriptionId = new Guid().ToString();
+            _subscriptionId = Guid.NewGuid().ToString();
             _topicId = config["TopicId"];
             _projectId = config["ProjectId"];
             _hub = hub;

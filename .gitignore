@@ -2,9 +2,11 @@
 **/bin/
 **/obj/
 *.csproj.user
-#**/appsettings.Development.json
+**/appsettings.Development.json
 publish/
 
 # Exclude git history and configuration.
 .git/
 #.gitignore
+#
+**/key.json
