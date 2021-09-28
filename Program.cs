@@ -11,7 +11,7 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseEndpoints(endpoints =>
-    endpoints.MapHub<ChatHub>("/chathub")
+    endpoints.MapHub<NotifyHub>("/notifyhub")
 );
 
 app.Run();

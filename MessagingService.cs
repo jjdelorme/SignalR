@@ -13,17 +13,22 @@ namespace signalR
         private string _projectId;
         private string _topicId;
         private string _subscriptionId;
-        private IHubContext<ChatHub> _hub;
+        private IHubContext<NotifyHub> _hub;
         private SubscriptionName? _subscriptionName;
         private SubscriberClient? _subscriber;
         private Task? _processorTask;
 
-        public MessagingService(ILogger<MessagingService> logger, IConfiguration config, IHubContext<ChatHub> hub)
+        public MessagingService(ILogger<MessagingService> logger, IConfiguration config, IHubContext<NotifyHub> hub)
         {
-            _log = logger;
             _topicId = config["TopicId"];
             _projectId = config["ProjectId"];
+
+            if (_topicId == null || _projectId == null)
+                throw new ArgumentNullException(
+                    "You must configure values for PubSub `TopicId`, `ProjectId`");
+
             _subscriptionId = $"{_topicId}_{Guid.NewGuid().ToString()}";
+            _log = logger;
             _hub = hub;
         }
 

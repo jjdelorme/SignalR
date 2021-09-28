@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace signalR
 {
-    public class ChatHub : Hub
+    public class NotifyHub : Hub
     {
         public async Task SendMessage(string user, string message)
         {
