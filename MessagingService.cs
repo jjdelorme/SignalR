@@ -15,6 +15,8 @@ namespace signalR
         private string _subscriptionId;
         private IHubContext<ChatHub> _hub;
         private SubscriptionName? _subscriptionName;
+        private SubscriberClient? _subscriber;
+        private Task? _processorTask;
 
         public MessagingService(ILogger<MessagingService> logger, IConfiguration config, IHubContext<ChatHub> hub)
         {
@@ -28,19 +30,16 @@ namespace signalR
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             CreateSubscription();
-
-            SubscriberClient subscriber = 
-                await SubscriberClient.CreateAsync(_subscriptionName);
-
-            await subscriber.StartAsync(ProcessMessageAsync);   
+            _subscriber = await SubscriberClient.CreateAsync(_subscriptionName);
+            _processorTask = _subscriber.StartAsync(ProcessMessageAsync);
         }
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
-            SubscriberClient subscriber = 
-                await SubscriberClient.CreateAsync(_subscriptionName);
-            
-            await subscriber.StopAsync(CancellationToken.None);
+            if (_subscriber != null)
+            {
+                await _subscriber.StopAsync(CancellationToken.None);
+            }
             
             DeleteSubscription();
         }
@@ -48,7 +47,8 @@ namespace signalR
         private void DeleteSubscription()
         {
             SubscriberServiceApiClient subscriber = SubscriberServiceApiClient.Create();
-            subscriber.DeleteSubscription(_subscriptionName);            
+            subscriber.DeleteSubscription(_subscriptionName);      
+            _log.LogInformation($"Deleted subscription: {_subscriptionId}");      
         }
 
         private void CreateSubscription()
@@ -58,12 +58,14 @@ namespace signalR
 
             _subscriptionName = SubscriptionName.FromProjectSubscription(
                 _projectId, _subscriptionId);
-            Subscription? subscription = null;
 
             try
             {
-                subscription = subscriber.CreateSubscription(
+                subscriber.CreateSubscription(
                     _subscriptionName, topicName, pushConfig: null, ackDeadlineSeconds: 60);
+                
+                _log.LogInformation($"Created subscription: {_subscriptionId}");
+                
             }
             catch (RpcException e) when (e.Status.StatusCode == StatusCode.AlreadyExists)
             {
