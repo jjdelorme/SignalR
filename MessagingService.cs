@@ -19,9 +19,9 @@ namespace signalR
         public MessagingService(ILogger<MessagingService> logger, IConfiguration config, IHubContext<ChatHub> hub)
         {
             _log = logger;
-            _subscriptionId = Guid.NewGuid().ToString();
             _topicId = config["TopicId"];
             _projectId = config["ProjectId"];
+            _subscriptionId = $"{_topicId}_{Guid.NewGuid().ToString()}";
             _hub = hub;
         }
 
